@@ -8,20 +8,20 @@ This script supports both **French** and **English**, allows **city selection**,
 
 ## 🚀 Features
 
-- ✅ Language selection (French or English interface)
-- ✅ City selection (Rabat, Tanger, Marrakech, Casablanca, Agadir)
-- ✅ Handles changing website structure with selector fallbacks
-- ✅ Anti-bot detection techniques (User-Agent spoofing + delays)
-- ✅ Error handling for network and page structure issues
-- ✅ Outputs results by location with nested structure
+- ✅ Language selection (French or English interface)  
+- ✅ City selection (Rabat, Tanger, Marrakech, Casablanca, Agadir)  
+- ✅ Handles changing website structure with selector fallbacks  
+- ✅ Anti-bot detection techniques (User-Agent spoofing + delays)  
+- ✅ Error handling for network and page structure issues  
+- ✅ Outputs results by location with nested structure  
 
 ---
 
 ## 🧰 Tech Used
 
-- `requests` – to fetch HTML content
-- `BeautifulSoup` – to parse and extract data from HTML
-- `random`, `time` – to randomize delays and avoid detection
+- `requests` – for sending HTTP requests  
+- `BeautifulSoup` – for parsing and navigating HTML  
+- `random`, `time` – for delays to mimic human behavior  
 
 ---
 
@@ -35,3 +35,29 @@ This script supports both **French** and **English**, allows **city selection**,
 📍 Agdal
   🏠 Modern Studio in City Center
      💰 5,200 DH
+
+🛠️ How to Use
+1. Clone the Repository
+
+git clone https://github.com/yourusername/mubawab-real-estate-scraper.git
+cd mubawab-real-estate-scraper
+
+2. Install Dependencies
+
+Make sure you have Python 3 installed. Then run:
+
+pip install requests beautifulsoup4
+
+3. Run the Script
+
+python scraper.py
+
+4. Follow the Prompts
+
+    Choose your interface language (French or English)
+
+    Select a city from the list (Rabat, Tanger, etc.)
+
+5. View the Output
+
+Listings are grouped by location and printed in the terminal.
