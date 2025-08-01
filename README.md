@@ -36,28 +36,28 @@ This script supports both **French** and **English**, allows **city selection**,
   🏠 Modern Studio in City Center
      💰 5,200 DH
 ```
-## 🛠️ How to Use
-#   1. Clone the Repository
+# 🛠️ How to Use
+##   1. Clone the Repository
 ```plaintext
 git clone https://github.com/yourusername/mubawab-real-estate-scraper.git
 cd mubawab-real-estate-scraper
 ```
-###   2. Install Dependencies
+##   2. Install Dependencies
 
 Make sure you have Python 3 installed. Then run:
 
 pip install requests beautifulsoup4
 
-###  3. Run the Script
+##  3. Run the Script
 
 python scraper.py
 
-###   4. Follow the Prompts
+##   4. Follow the Prompts
 
-    Choose your interface language (French or English)
+Choose your interface language (French or English)
 
-    Select a city from the list (Rabat, Tanger, etc.)
+Select a city from the list (Rabat, Tanger, etc.)
 
-###   5. View the Output
+##   5. View the Output
 
 Listings are grouped by location and printed in the terminal.
