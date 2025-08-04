@@ -41,7 +41,7 @@ This script supports both **French** and **English**, allows **city selection**,
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/mohamed12p-sys/mubawab-real-estate-scraper.git
+git clone https://github.com/TheCodeNoodle/mubawab-real-estate-scraper.git
 cd mubawab-real-estate-scraper
 ```
 
