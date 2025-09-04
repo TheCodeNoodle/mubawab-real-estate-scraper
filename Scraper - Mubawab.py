@@ -4,10 +4,9 @@ import time
 import random
 import json
 import re
+import pandas as pd
 
-data_base = {}
-
-# --- Helpers ---
+# ----------------- Helpers -----------------
 def clean_text(text: str) -> str:
     """Clean text (remove non-breaking spaces, extra whitespace)."""
     return re.sub(r"\s+", " ", text.replace("\xa0", " ")).strip()
@@ -41,36 +40,6 @@ def extract_features(item):
             features[key] = int(num[0]) if num else None
     return features
 
-# --- User input ---
-def select_language():
-    langs = ["fr", "en"]
-    while True:
-        try:
-            choice = int(input("Languages:\n1- French\n2- English\n> "))
-            if 1 <= choice <= 2:
-                return langs[choice - 1]
-            else:
-                print("Please enter 1 or 2.")
-        except ValueError:
-            print("Invalid input. Enter a number.")
-
-def select_city(language):
-    cities = ["rabat", "tanger", "marrakech", "casablanca", "agadir"]
-    print("-------------------------------------------------")
-    for i, city in enumerate(cities, 1):
-        print(f"{i}- {city.capitalize()}")
-    prompt = "Choisissez la ville: " if language == "fr" else "Choose the city: "
-   
-    while True:
-        try:
-            choice = int(input(prompt))
-            if 1 <= choice <= len(cities):
-                return cities[choice - 1]
-            else:
-                print(f"Please enter a number between 1 and {len(cities)}.")
-        except ValueError:
-            print("Invalid input. Enter a number.")
-
 def get_headers():
     return {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -81,10 +50,10 @@ def get_headers():
         'Upgrade-Insecure-Requests': '1',
     }
 
+# ----------------- Scraper -----------------
 base_url = "https://www.mubawab.ma/"
 
-# --- Scraper ---
-def mub_scraper(data_base, base_url, language, city, page):
+def mub_scraper(base_url, language, city, page, data_list):
     url = f"{base_url}{language}/ct/{city}/immobilier-a-vendre-all:p:{page}"
     print(f"Requesting: {url}")
     
@@ -114,7 +83,7 @@ def mub_scraper(data_base, base_url, language, city, page):
             
             if not containers:
                 print("⚠️ No containers found.")
-                return data_base
+                return data_list
             
             for item in containers:
                 price, title, location = None, None, None
@@ -158,95 +127,54 @@ def mub_scraper(data_base, base_url, language, city, page):
                     features = extract_features(item)
                     
                     if price_int:
-                        print(f"✓ Found listing:")
-                        print(f"  Location: {location_text}")
-                        print(f"  Title: {title_text}")
-                        print(f"  Price: {price_int} DH")
-                        if features:
-                            print(f"  Features: {features}")
-                        print("-" * 50)
-                        
-                        if location_text not in data_base:
-                            data_base[location_text] = {}
-                        data_base[location_text][title_text] = {
+                        data_list.append({
+                            "location": location_text,
+                            "title": title_text,
                             "price": price_int,
                             "area": features.get("area"),
                             "rooms": features.get("rooms"),
                             "bedrooms": features.get("bedrooms"),
                             "bathrooms": features.get("bathrooms")
-                        }
+                        })
                 else:
                     print("⚠️ Incomplete listing found.")
                     
-        else:
-            print(f"Error {response.status_code}")
-                
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
     except Exception as e:
         print(f"An error occurred: {e}")
     
-    return data_base
+    return data_list
 
-# --- Run program ---
+# ----------------- Run -----------------
 print("--------Mubawab Scraper--------")
-lang = select_language()
-city = select_city(lang)
+language = "fr"  # french is better, since the website is moroccan
+city = "casablanca"  # choose the city directly, terminal inputs are just dumb
 
 print(f"\nScraping {city.capitalize()} listings...")
 
+data_list = []
 page = 1
 while True:
-    prev_count = sum(len(listings) for listings in data_base.values())
-    mub_scraper(data_base, base_url, lang, city, page)
-    new_count = sum(len(listings) for listings in data_base.values())
+    prev_count = len(data_list)
+    mub_scraper(base_url, language, city, page, data_list)
+    new_count = len(data_list)
     if new_count == prev_count:  # no new listings found
         break
     page += 1
 
-# --- Print results ---
-print("\n" + "="*60)
-print(" "*18 + "---SCRAPED LISTINGS---")
-print("="*60)
-
-if data_base:
-    file_name = f"data_{city}.json"
-    with open(file_name, 'w', encoding="utf-8") as json_file:
-        json.dump(data_base, json_file, indent=4, ensure_ascii=False)
+# ----------------- Save -----------------
+if data_list:
+    # Save JSON
+    json_file = f"data_{city}.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(data_list, f, indent=4, ensure_ascii=False)
     
-    total_listings = sum(len(listings) for listings in data_base.values())
-    print(f"Total listings found: {total_listings}")
+    # Save CSV
+    df = pd.DataFrame(data_list)
+    csv_file = f"data_{city}.csv"
+    df.to_csv(csv_file, index=False, encoding="utf-8-sig")
     
-    for location, listings in data_base.items():
-        prices = [info["price"] for info in listings.values() if info["price"]]
-        areas = [info["area"] for info in listings.values() if info["area"] and info["price"]]
-        
-        if prices:
-            avg_price = sum(prices) / len(prices)
-        else:
-            avg_price = 0
-        
-        if areas:
-            avg_ppm = sum(info["price"]/info["area"] for info in listings.values() if info["price"] and info["area"]) / len(areas)
-        else:
-            avg_ppm = 0
-        
-        print(f"\n📍 {location}")
-        print("-" * len(f"📍 {location}"))
-        print(f"   ➡ Average price: {avg_price:,.0f} DH")
-        if avg_ppm:
-            print(f"   ➡ Average price per m²: {avg_ppm:,.0f} DH/m²")
-        
-        for title, info in listings.items():
-            print(f"\n  🏠 {title}")
-            print(f"     💸 {info['price']:,} DH")
-            if info["area"]:
-                print(f"     📐 {info['area']} m²")
-            if info["rooms"]:
-                print(f"     🏡 {info['rooms']} rooms")
-            if info["bedrooms"]:
-                print(f"     🛏️ {info['bedrooms']} bedrooms")
-            if info["bathrooms"]:
-                print(f"     🛁 {info['bathrooms']} bathrooms")
+    print(f"\nSaved {len(df)} listings to {json_file} and {csv_file}")
 else:
-    print("❌ No data was scraped!")
+    print("!!__No data was scraped__!!")
